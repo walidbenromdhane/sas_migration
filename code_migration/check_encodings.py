@@ -6,7 +6,8 @@ class ConvertSasCodeUtf:
     """
     This class helps convert SAS code files to UTF-8 encoding and detect the original encoding.
     """
-    def __init__(self, path, output):
+    
+	def __init__(self, path, output):
         """
         Initializes the class with file path, filename, and output path.
 
@@ -26,11 +27,11 @@ class ConvertSasCodeUtf:
         self.filename= self.get_sas_filenames()
         print(self.filename)
 
-        dict_encoding={"item":[],"input_format":[],"output_format":[]}
+        dict_encoding={"item":[""],"input_format":[""],"output_format":[""]}
         df = pd.DataFrame.from_dict(dict_encoding)
 
         for file in self.filename:
-            print(self.path + "\\\\" + file)
+            # print(self.path + "\\" + file)
             encoding= self.detect_encoding(file = file )
             print(encoding)
             self.convert_sas_file(file, encoding, file )
@@ -41,7 +42,6 @@ class ConvertSasCodeUtf:
             dict_encoding={"item":[file], "input_format":[encoding],"output_format":[encoding_out]}
             df_temp = pd.DataFrame.from_dict(dict_encoding)
             df = pd.concat([df, df_temp])
-
         return df
 
 
@@ -66,16 +66,17 @@ class ConvertSasCodeUtf:
         Returns:
             A list of filenames (strings) with the .sas extension."""
         sas_filenames = []
-        for filename in os.listdir(self.path):
-            if filename.lower().endswith(".sas"): # Check for lowercase .sas extension
-                print(filename)
-            if filename.lower().endswith(".cfg"): # Check for lowercase .sas extension
-                sas_filenames.append(filename)
+        #for filename in os.listdir(self.path):
+        #    if filename.lower().endswith(".sas"): # Check for lowercase .sas extension
+        #        print(filename)
+        #    # if filename.lower().endswith(".cfg"): # Check for lowercase .sas extension
+        #        sas_filenames.append(filename)
         for root, dirs, files in os.walk(self.path):
             dirs = [d for d in directories]
             for dir in dirs:
                 dir_path = os.path.join(root, dir)
-                for filename in os.listdir(dir_path):
+				files = os.listdir(dir_path)
+                for filename in files:
                     if filename.lower().endswith((".sas",".cfg",".ksh")):
                         file_path = os.path.join(dir_path, filename)
                         print(file_path)

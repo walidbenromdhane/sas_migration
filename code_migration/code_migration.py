@@ -1,8 +1,9 @@
+
 import csv, os, re, datetime, shutil, chardet
 
-########################################################################################################################
+############################################################################################
 # Static functions
-########################################################################################################################
+############################################################################################
 
 def is_a_file(path):
     """Detects whether a given path corresponds to a file or not."""
@@ -12,7 +13,7 @@ def is_a_file(path):
     else:
         return False
 
-########################################################################################################################
+############################################################################################
 
 def fix_file_encoding(filepath):
     with open(filepath, 'rb') as f:
@@ -32,19 +33,20 @@ def fix_file_encoding(filepath):
     with open(filepath, mode='w', newline='', encoding='utf8') as f:
         f.writelines(data)
 
-########################################################################################################################
+############################################################################################
+
 def substring_in_quotes(string):
     """Extracts the substring within quotes from a given string"""
-    path_regex = r'["\']([^"\']+)["\']'
+    path_regex = r"(['\"])(.*?)\1'
     matches = re.findall(path_regex, string)
-    substring = []
+    substring = ''
     if len(matches) > 0:
         # substring = matches[0][1]
         substring = [match[1] for match in matches]
 
 return substring
 
-########################################################################################################################
+############################################################################################
 
 def get_paths_from_line(line, command_regex):
     """Extracts the path from a given line string"""
@@ -58,9 +60,9 @@ def get_paths_from_line(line, command_regex):
                 detected_path = match
 
             # print(detected_path)
-            # If the detected path contains quotes,
-            if ("'" in detected_path) or ('"' in detected_path):
-                # Get the substring in quotes from the detected path
+            # # If the detected path contains quotes,
+            if ('"' in detected_path) or ("'" in detected_path):
+                # get the substring in quotes from the detected path
                 detected_paths = substring_in_quotes(detected_path)
                 # print('detected_paths', detected_paths)
                 for detected_path in detected_paths:
@@ -71,7 +73,7 @@ def get_paths_from_line(line, command_regex):
                         old_path = detected_path
 
                     # If the path contains / or \, add it to the list
-                    if ('/' in old_path) or ('\\' in old_path) or ('%' in old_path):
+                    if ('/' in old_path) or ('\\' in old_path) or ('&' in old_path):
                         paths.append(old_path)
             else:
                 paths = detect_paths_without_quotes(detected_path)
@@ -82,11 +84,11 @@ def get_paths_from_line(line, command_regex):
 			# Here the algorithm detects the syntax 'filename reference names' and thinks that 'names' is a path, but it's not.
     return paths
 
-########################################################################################################################
+############################################################################################
 
 def detect_paths_without_quotes(input_string):
     # Regular expression pattern to detect Unix and Windows file paths
-    pattern = r"((?:[^\s/\\]+/)*[^\s/\\]+\.[^\s/\\]+)|((?:\w:\\|\/)[^\s,;'\"]+)"
+    pattern = r"((?:/[^\s,:\"'()]+)+|(?:\\\\[^\s,:\"'()]+)+)"
     
     # Find all matches in the input string
     # print(input_string)
@@ -94,25 +96,25 @@ def detect_paths_without_quotes(input_string):
 
     return matches
 
-########################################################################################################################
+############################################################################################
 
 def contains_comment(line):
-    if "/" in line or "*" in line:
+    if "/*" in line or "*/" in line:
         return "Yes"
     else:
         return "No"
 
-########################################################################################################################
+############################################################################################
 
 def get_macro_var_from_path(path):
     """Detects the macro variable used in the path"""
-    # Regex to find '%', followed by one or more word characters.
+    # Regex to find '&', followed by one or more word characters.
     # This regex still captures a sequence of word characters following an ampersand but uses
     # a positive lookahead to ensure that the sequence is followed by either a non-word character
     # (excluding the underscore) or the end of the string. This helps in scenarios where macro
     # variables are followed by punctuation or are at the end of a string without a non-word delimiter.
 
-    pattern = r'%(\w+)(?=[^A-Za-z0-9_]|$)'
+    pattern = r'&(\w+)(?=[^A-Za-z0-9_]|$)'
     # Search for the pattern
     match = re.search(pattern, path)
     # If a match is found, return the first group (the macro-variable name)
@@ -121,7 +123,7 @@ def get_macro_var_from_path(path):
     else:
         return None
 
-########################################################################################################################
+############################################################################################
 
 def get_sas_files(root, input_dir, files):
     # Determine the relative path from the current directory to each SAS file
@@ -133,33 +135,33 @@ def get_sas_files(root, input_dir, files):
     sas_files = [f for f in files if f.endswith((".sas",".cfg",".ksh"))]
     return sas_files
 
-########################################################################################################################
+############################################################################################
 
 def parse_linux_command(command):
     # Regex pattern to split the command into command type, options, and parameters
     # ^(\S+) - Matches the command type (the first word)
-    # ((?:\s+-\S+)+) - Matches options (group of items starting with a hyphen)
+    # ((?:\s+-\S+)*) - Matches options (group of items starting with a hyphen)
     # (.*) - Matches the remaining part, typically the parameters
-    pattern = r'^(\S+)((?:\s+-\S+)+)?\s*(.*)$'
+    pattern = r'^(\S+)((?:\s+-\S+)*)\s*(.*)'
 
     match = re.match(pattern, command.strip())
     if match:
         command_type = match.group(1)
         options = match.group(2).strip().split() # Split options into a list, remove leading/trailing spaces
         parameters = match.group(3).strip() # Remove leading/trailing spaces from parameters
-        parameters = re.split('\t|\t+', parameters) # Split using delimiter = ' ' or '\t'
+        parameters = re.split(r'[ \t]+', parameters) # Split using delimiter = ' ' or '\t'
         return command_type, options, parameters
     else:
         return None, None, None
 
-########################################################################################################################
+############################################################################################
 
 def replace_macro_variables(input_string):
     modified_string = ""
     i = 0
     found = 0
     while i < len(input_string):
-        if input_string[i] == "%":
+        if input_string[i] == "&":
             found = 1
             flag = 0
             macro_variable = ""
@@ -168,23 +170,23 @@ def replace_macro_variables(input_string):
             while i < len(input_string) and (input_string[i].isalnum() or input_string[i] == "_"):
                 macro_variable += input_string[i]
                 i += 1
+			if z==0:
+				modified_string += "SAS.symget('" + macro_variable + "')+r'"
             if i == len(input_string):
-                modified_string += "' " + "sas.symget('" + macro_variable + "')" + "'"
-                found = 0
-            elif i != 0 and z != len(input_string):
-                modified_string += "'" + "sas.symget('" + macro_variable + "')" + "'"
-            else:
-                modified_string += "%" + macro_variable
-        else:
+                modified_string += "'" + "SAS.symget('" + macro_variable + "')"
+                flag = 1
+            elif z!= 0 and z!= len(input_string):
+                modified_string += "'" + "SAS.symget('" + macro_variable + "')+r'"
+		else:
             modified_string += input_string[i]
             i += 1
-    if input_string[len(input_string)-1] != "%" and found == 1 and flag == 0:
-        modified_string = modified_string + "'"
+    if input_string[len(input_string)-1] != ")" and found == 1 and flag == 0:
+        modified_string = modified_string+"'"
     return modified_string
 
-########################################################################################################################
+############################################################################################
 # The PathMapper class
-########################################################################################################################
+############################################################################################
 
 class PathMapper:
     def __init__(self, csv_file_path):
@@ -226,14 +228,14 @@ class PathMapper:
         """
         old_path = old_path.strip()
         new_path = self.mapping_dict.get(old_path, old_path)
-        if "_no_migration_" in new_path:
-            new_path = "/*" + csv_comment + new_path + "*/\n"
+        if "no_migration" in new_path:
+            new_path = f"/*EY comment: {new_path}*/{old_path\n}"
         return new_path
         # return self.mapping_dict.get(old_path, "_unmapped_path_")
 
-########################################################################################################################
+############################################################################################
 # The ReportGenerator class
-########################################################################################################################
+############################################################################################
 
 class ReportGenerator:
 
@@ -261,29 +263,27 @@ class ReportGenerator:
         # with open(self.report_path, 'w', newline='') as csvfile:
         #     writer = csv.DictWriter(csvfile, fieldnames=self.fieldnames)
         #     writer.writeheader()
-        #     writer.writerows(self.entries)
+        #     writer.writerows(self.report)
 
-########################################################################################################################
+############################################################################################
 # The SasProcessor class
-########################################################################################################################
+############################################################################################
 
 class SasProcessor:
 
     regex = {
-        'let'        : r"(?i)(?<!\w)%let\s+\+(\w+)\s*=\s*(.+?);",
-        'filename'   : r"(?i)filename\s+(\S+)\s+'([^']+)'",
-        'filename2'  : r"(?i)filename\s+(\S+)\s+"([^"]+)"",
-        'libname'    : r"(?i)libname\s+(\S+)\s+'([^']+)'",
-        'includec'   : r"(?i)%include\s+'([^']+)'",
-        'x'          : r"(?i)^x\s+'([^']+)'",
-        'x2'         : r"(?i)^x\s+\"([^\"]+)\"",
-        'proc export': r"(?i)proc export\s+data\s*=\s*(\S+)",
-        'proc import': r"(?i)proc import\s+data\s*=\s*(\S+)",
-        'proc printto': r"(?i)proc printto\s+print\s*=\s*'([^']+)'",
-        'rsubmit'    : r"(?i)rsubmit\s+%nrstr\(([^)]+)\)",
-        'bsub'       : r"(?i)bsub\s+<\s+([^ ]+)",
-        'rfile'      : r"(?i)rfile\s+([^ ]+)",
-        'call symput': r"(?i)call\s+symputx?\s*\((.+)\)"
+        'let'        : r"(?i)%let\s+(\w+)\s*=\s*(.+?);",
+        'filename'   : r"(?i)filename\s+(\S+)\s+'([^;]+);?",
+        'filename1'  : r"(?i)filename\((\S+),(\S+)\);?",
+        'libname'    : r"(?i)libname\s+(\S+)\s+([^;]+);?",
+        'include'    : r"(?i)%include\s+([^;]+);?",
+        'export'	 : r"(?i)proc export\s+([^;]+);?",
+        'proc sql'	 : r"(?i)proc sql\s+([^;]+);?",
+		'import'	 : r"(?i)proc import\s+([^;]+);?"
+        'printto'	 : r"(?i)proc printto\s+([^;]+);?",
+		'sasautos'	 : r"(?i)\bsasautos\s*=([^;]+)\s*;?"
+        'infile'     : r"(?i)infile\s+([^;]+);?",
+        'call symput': r"\bcall\s+symputx?\s*(.*)"
     }
 
     ####################################################################################################################
@@ -299,29 +299,36 @@ class SasProcessor:
             'echo'   : 'Category1',
             'find'   : 'Category1',
             'ls'     : 'Category1',
+            'lsuser' : 'Category1',
             'scp'    : 'Category1',
             'sftp'   : 'Category1',
-            'ftp'    : 'Category1',
-            'chmod'  : 'Category2',
+            'ln'     : 'Category1',
+            'unzip'  : 'Category2',
+            'cat'  	 : 'Category2',
             'chgrp'  : 'Category2',
-            'chown'  : 'Category2',
+            'chmod'  : 'Category2',
             'cp'     : 'Category2',
             'delete' : 'Category2',
-            'mv'     : 'Category2',
+            'get' 	 : 'Category2',
+            'gunzip' : 'Category2',
+            'gzip' 	 : 'Category2',
             'mkdir'  : 'Category2',
-            'rmdir'  : 'Category2',
+            'mv'     : 'Category2',
+            'put'    : 'Category2',
             'rm'     : 'Category2',
+            'tar'    : 'Category2',
+            'cd'     : 'Category3',
             'umask'  : 'Category3',
             'kill'   : 'Category3'
         }
 
-########################################################################################################################
+############################################################################################
 
 	def get_lines_from_file(self, file_path):
 		with open(file_path, 'r', encoding='utf8') as f:
 			self.lines = f.readlines()
 
-########################################################################################################################
+############################################################################################
 
 	def get_macro_definitions(self):
 		"""Creates a dictionary with the definitions of the macro variables"""
@@ -339,18 +346,18 @@ class SasProcessor:
 					macro_definitions[macro_var] = [macro_value]
 		return macro_definitions
 
-########################################################################################################################
+############################################################################################
 
 	def process_sas_file_paths(self, filelf, sas_input_path, sas_output_path):
-		commands = ["filename", "include", "export", "import", "infile", "proc sql", "printto",
-					"sasaoutes", "filename", "filename2", "let", "call symput"]
+		commands = ["libname", "include", "export", "import", "infile", "proc sql", "printto",
+					"sasautos", "filename", "filename1", "let", "call symput"]
 
 		modified_lines = list(self.lines)
 		for command in commands:
 			modified_lines = self.process_sas_file_paths_one_command(modified_lines, sas_input_path, sas_output_path, command)
 		return modified_lines
 
-########################################################################################################################
+############################################################################################
 
 	def process_sas_file_paths_one_command(self, modified_lines, sas_input_path, sas_output_path, command):
 		command_regex = self.regex[command]
@@ -364,7 +371,7 @@ class SasProcessor:
 
 		return modified_lines
 
-########################################################################################################################
+############################################################################################
 
 	def process_line(self, modified_lines, line, line_index, command_regex, sas_input_path, sas_output_path, command, macro_definitions):
 		paths_from_line = get_paths_from_line(line, command_regex)
@@ -385,7 +392,7 @@ class SasProcessor:
 				# self.export_sas_output(intermediate_output, modified_lines)
 		return modified_lines
 
-########################################################################################################################
+############################################################################################
 
 	def process_macro_path(self, modified_lines, path, line_index, sas_input_path, sas_output_path, command, macro_definitions):
 		macro_var = get_macro_var_from_path(path)
@@ -400,7 +407,7 @@ class SasProcessor:
 					self.add_unmapped_entry(sas_input_path, sas_output_path, command, line_index, j, let_line, macro_var, has_comment)
 		return modified_lines
 
-########################################################################################################################
+############################################################################################
 
 	def update_macro_definition(self, let_line, old_paths, sas_input_path, sas_output_path, command, line_index, let_line_index):
 		let_line_new = let_line
@@ -412,7 +419,7 @@ class SasProcessor:
 				self.add_report_entry(sas_input_path, sas_output_path, command, line_index, let_line_index, let_line, old_path, new_path, has_comment)
 		return let_line_new
 
-########################################################################################################################
+############################################################################################
 
 	def process_hardcoded_path(self, modified_lines, line, line_index, path, sas_input_path, sas_output_path, command):
 		new_path = self.path_mapper.get_new_path(path)
@@ -422,7 +429,7 @@ class SasProcessor:
 		self.add_report_entry(sas_input_path, sas_output_path, command, line_index, line_index, line, path, new_path, has_comment)
 		return modified_lines
 
-########################################################################################################################
+############################################################################################
 
 	def add_report_entry(self, sas_input_path, sas_output_path, command, line_index, let_line_index, line, old_path, new_path, has_comment):
 		path = os.path.dirname(sas_input_path)
@@ -433,7 +440,7 @@ class SasProcessor:
 		]
 		self.report.add_entry(row)
 
-########################################################################################################################
+############################################################################################
 
 	def add_unmapped_entry(self, sas_input_path, sas_output_path, command, line_index, let_line_index, line, macro_var, has_comment):
 		path = os.path.dirname(sas_input_path)
@@ -446,7 +453,7 @@ class SasProcessor:
 		]
 		self.report.add_entry(row)
 
-########################################################################################################################
+############################################################################################
 
 	# Process detected Xcommand
 	def process_x_command_one_line(self, xcommand, sas_input_path, sas_output_path, line_number):
@@ -485,7 +492,7 @@ class SasProcessor:
 			# print("options :",options)
 			# print("parameters :",parameters)
 
-########################################################################################################################
+############################################################################################
 
 	def replace_path(self, path):
 		list_keys = list(self.path_mapper.mapping_dict.keys())
@@ -495,7 +502,7 @@ class SasProcessor:
 			path = path.replace(old, new)
 		return path
 
-########################################################################################################################
+############################################################################################
 
 	def get_new_command(self, command, command_type, options, parameters):
 		if command_type == 'scp':

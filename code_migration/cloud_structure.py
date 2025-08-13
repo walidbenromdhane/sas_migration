@@ -2,12 +2,14 @@ import os, csv
 import shutil
 
 class CloudStructure():
+	
     def __init__(self, source_path, target_path, structure_mapping_file) -> None:
         self.source_path = source_path
         self.target_path = target_path
         self.structure_mapping_file = structure_mapping_file
         self.get_structure_map()
         self.run()
+
 
     def get_structure_map(self):
         self.structure_map = {}
@@ -41,3 +43,6 @@ class CloudStructure():
                 # except Exception as e:
                 #     print(f"{e}")
                 except: pass
+
+
+

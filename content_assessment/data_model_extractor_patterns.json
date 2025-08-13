@@ -1,0 +1,62 @@
+[
+    {
+        "type"			: "PROC SQL",
+	    "delimiters"	: {
+	    	"start"		    : "PROC SQL;",
+	    	"end"		    : "QUIT;"
+	},
+	"keys" : [
+	    "PROC SQL",
+	    "CREATE TABLE",
+	    "LIKE",
+	    "SELECT",
+	    "INTO",
+	    "FROM",
+	    "INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL JOIN", "SELF JOIN",
+	    "WHERE",
+	    "GROUP BY",
+	    "HAVING",
+	    "ORDER BY",
+	    "QUIT"
+	]
+    },
+    {
+	"type"		: "DATA STEP",
+	"delimiters"	: {
+	    "start"	    : "DATA",
+	    "end"	    : "RUN;"
+	},
+	"keys": [
+		"DATA",
+		"SET",
+		"MERGE",
+		"BY",
+		"WHERE",
+		"KEEP",
+		"DROP",
+		"RENAME",
+		"FORMAT",
+		"INFORMAT",
+		"LENGTH",
+		"ARRAY",
+		"RETAIN",
+		"MERGE",
+		"LABEL",
+		"IF",
+		"ELSEIF",
+		"ELSE",
+		"OUTPUT",
+		"CALL",
+		"DO",
+		"RUN"
+	]
+    }
+]
+
+
+
+
+
+
+
+

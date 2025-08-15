@@ -282,9 +282,9 @@ class SasProcessor:
         'include'    : r"(?i)%include\s+([^;]+);?",
         'export'     : r"(?i)proc export\s+([^;]+);?",
         'proc sql'   : r"(?i)proc sql\s+([^;]+);?",
-        'import'     : r"(?i)proc import\s+([^;]+);?"
+        'import'     : r"(?i)proc import\s+([^;]+);?",
         'printto'    : r"(?i)proc printto\s+([^;]+);?",
-        'sasautos'   : r"(?i)\bsasautos\s*=([^;]+)\s*;?"
+        'sasautos'   : r"(?i)\bsasautos\s*=([^;]+)\s*;?",
         'infile'     : r"(?i)infile\s+([^;]+);?",
         'call symput': r'\bcall\s+symputx?\s*(.*)'
     }
@@ -459,11 +459,10 @@ class SasProcessor:
 
 #########################################################################################
 
-
 	# Process detected Xcommand
 	def process_x_command_one_line(self, xcommand, sas_input_path, sas_output_path, line_number):
-		# matches = re.findall(r'["\']([^"\']+)["\']", xcommand)
-		# matches = xcommand.strip('x ').strip()
+        # matches = re.findall(r'["\']([^"\']+)["\']', xcommand)
+        # matches = [xcommand.strip('x ').strip()]
 		matches = re.findall(r'[xX]\s+["\']?(.*?)["\']?\s*;', xcommand)
 		if len(matches) == 1:
 			# try:
@@ -484,10 +483,11 @@ class SasProcessor:
 			has_comment = contains_comment(matches[0])
 			row = [self.path_mapper.csv_file_path, path, name, sas_input_path, sas_output_path,
 					command_type, command, xcommand_category, line_number, new_command, has_comment] # TODO add a colum "Replaced"
+			
 			self.report_x.add_entry(row)
 			return new_command
 			# except:
-			# TODO Use logging instead of prints
+			# 	#TODO Use logging instead of prints
 			# print("###########################################################")
 			# print("sas_input_path :",sas_input_path)
 			# print("line_number :",line_number)
@@ -539,7 +539,6 @@ filename xfile "{source}" recfm=n;
 filename zfile zip "{source}" compression=9 member="{filename}" recfm=n;
 %let rc = %sysfunc(fcopy(xfile, zfile));\n
 '''
-
 		elif command_type == 'unzip':
 			match = re.search(r'unzip\b.*?\s([^\s]+)\s+-d\s+([^\s]+)', command)
 			zip_file_name = match.group(1)
@@ -549,15 +548,16 @@ filename zfile zip "{source}" compression=9 member="{filename}" recfm=n;
 				zip_file_name = zip_file_name.rsplit('/', 1)[1]
 
 			new_command = f'/* X "{command}"; /* EY COMMENT: Command was replaced with the following:*/ \n%unzip_files({target_path}, {zip_file_name});\n'
+			
 #        destination = parameters[0]
 #        source = parameters[1]
 #        unzipped_file = destination.split('/')[-1]
 #        new_command = f'''%let upath = {destination};
 #        %let path = {source};
-#
+
 # filename xl "&upath";
 # filename zfile zip "&path" member="{unzipped_file}" recfm=n;
-#
+
 # data _null_;
 #     infile zfile lrecl=256 recfm=F length=length eof=eof unbuf;
 #     file xl lrecl=256 recfm=N;
@@ -566,13 +566,13 @@ filename zfile zip "{source}" compression=9 member="{filename}" recfm=n;
 #     return;
 # eof:
 #     stop;
-# run;'\n
+# run;\n
 #'''
 #		elif command_type == 'tar':
 #        destination = parameters[0]
 #        source = parameters[1]
 #        filename = source.split('/')[-1]
-#        new_command = f'''/*filename xfile "{source}" recfm=n;
+#        new_command = f'''filename xfile "{source}" recfm=n;
 #        filename zfile zip "{destination}" compression=9 member="{filename}" recfm=n;
 #        %let rc = %sysfunc(fcopy(xfile, zfile));\n
 #'''
@@ -754,8 +754,8 @@ class CodeMigrationExecution():
         df = pd.read_csv(report_path, encoding='latin-1')
         df = df[
             (df.has_comment == 'No') &
-            (~df.line.str.contains('{&path_}')) &
-            (~df.line.str.contains('{&PATH_}')) &
+            (~df.line.str.contains('&path_')) &
+            (~df.line.str.contains('&PATH_')) &
             (~df.line.str.contains('&sys_')) &
             (~df.line.str.contains('&app_')) &
             (~df.line.str.contains('sysfunc')) &

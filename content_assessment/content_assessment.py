@@ -168,8 +168,9 @@ class ContentAssessment:
             'value_0'  : a['value_0']  if 'value_0' in a else '',
             'value_1'  : a['value_1']  if 'value_1' in a else '',
             'index'    : a['index']    if 'index' in a else 0
-        } for a in b if a != [] for b in [filename_lst, libname_lst, let_lst, mac_lst, inc_lst,
-                                          create_tbl_lst, select_from_tbl_lst, x_command_lst]])
+        } for b in [filename_lst, libname_lst, let_lst, mac_lst, inc_lst,
+                    create_tbl_lst, select_from_tbl_lst, x_command_lst]
+		for a in b if b != []])
 
     #####################################################################################################################
 
@@ -281,9 +282,9 @@ class ContentAssessementExecution():
                 with open(logfile_path, "a") as logfile:
                     traceback.print_exc(file=logfile)
                 print('Error in finding .sas files!')
-                print('############################################################')
+                print('#############################################')
                 print(e)
-                print('############################################################')
+                print('#############################################')
                 print(r'\n')
                 raise
 

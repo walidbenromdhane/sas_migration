@@ -78,7 +78,7 @@ def get_paths_from_line(line, command_regex):
             else:
                 paths = detect_paths_without_quotes(detected_path)
 
-		# if not '&' in detected_path,
+		# if not '&' in detected_path:
 			# If the detected path does not contain quotes, it's not a real path.
 			# Example: Assume the code contains a comment like: /* This part contains filename reference names: */
 			# Here the algorithm detects the syntax 'filename reference names' and thinks that 'names' is a path, but it's not.
@@ -286,7 +286,7 @@ class SasProcessor:
         'printto'    : r"(?i)proc printto\s+([^;]+);?",
         'sasautos'   : r"(?i)\bsasautos\s*=([^;]+)\s*;?",
         'infile'     : r"(?i)infile\s+([^;]+);?",
-        'call symput': r'\bcall\s+symputx?\s*(.*)'
+        'call symput': r'\bcall\s+symputx?\s*(.*)',
     }
 
 
@@ -323,7 +323,7 @@ class SasProcessor:
             'tar'    : 'Category2',
             'cd'     : 'Category3',
             'umask'  : 'Category3',
-            'kill'   : 'Category3'
+            'kill'   : 'Category3',
         }
 
 ########################################################################################

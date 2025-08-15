@@ -71,7 +71,7 @@ class ConvertSasCodeUtf:
         #        print(filename)
         #    # if filename.lower().endswith(".cfg"): # Check for lowercase .sas extension
         #        sas_filenames.append(filename)
-        for root, dirs, files in os.walk(self.path):
+        for root, directories, files in os.walk(self.path):
             dirs = [d for d in directories]
             for dir in dirs:
                 dir_path = os.path.join(root, dir)

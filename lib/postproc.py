@@ -1,5 +1,6 @@
 import os, re
 import pandas as pd
+
 ###################################################################################################################
 
 def append_one_file(main_folder, file_prefix, folder_prefix):
@@ -27,7 +28,7 @@ def append_one_file(main_folder, file_prefix, folder_prefix):
 
     return merged_df
 
-###################################################################################################################
+#####################################################################################################################
 
 def append_all_files(main_folder, file_prefix_list, folder_prefix):
     for file_prefix in file_prefix_list:
@@ -36,7 +37,7 @@ def append_all_files(main_folder, file_prefix_list, folder_prefix):
         merged_df_path = os.path.join(main_folder, f'{file_prefix}_appended.xlsx')
         merged_df.to_excel(merged_df_path, index=False)
 
-###################################################################################################################
+#####################################################################################################################
 
 def read_file(file_path):
     if file_path.endswith('.csv'):
@@ -47,22 +48,22 @@ def read_file(file_path):
         raise("File extension should be CSV or XLSX")
     return df
 
-###################################################################################################################
+#####################################################################################################################
 
 def write_file(df, file_path):
     if file_path.endswith('.csv'):
-        df.to_csv(file_path, encoding="latin-1", index=False)
+        df.to_csv(file_path, encoding='latin-1', index=False)
     elif file_path.endswith('.xlsx'):
         df.to_excel(file_path, index=False)
     else:
         raise("File extension should be CSV or XLSX")
     return df
 
-###################################################################################################################
+#####################################################################################################################
 
 def detect_paths(input_string):
     # Regular expression to match Unix-like and Windows-like paths
-    path_pattern = re.compile('(/[^\s]+|[A-Za-z]:\\\\[^\s]+)')
+    path_pattern = re.compile(r'(/[^:\s]+)+|([A-Za-z]:\\[^:\s]+)+')
     if type(input_string) == str:
         paths = path_pattern.findall(input_string)
         paths = [item for sublist in paths for item in sublist if item]
@@ -70,7 +71,7 @@ def detect_paths(input_string):
     else:
         return ['']
 
-###################################################################################################################
+#####################################################################################################################
 
 def detect_first_path(input_string):
     # Regular expression to match Unix-like and Windows-like paths
@@ -80,4 +81,4 @@ def detect_first_path(input_string):
         first_path = input_string
     return first_path
 
-###################################################################################################################
+#####################################################################################################################

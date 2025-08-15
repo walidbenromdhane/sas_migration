@@ -12,6 +12,5 @@ pmm = PathMappingManager(execution_report_path,
                          execution_report_xcommand,
                          ca_hard_coded_paths,
                          ca_programs_main)
-
 pmm.read_input()
 pmm.consolidate_paths(write_path)

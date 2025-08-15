@@ -4,17 +4,17 @@ import csv
 import json
 
 
-##############################
+###################################################################################################
 # Global Parameters
-##############################
+###################################################################################################
 
 LOG_ENABLED     = True
 LOG_SHOW_ALL    = False
 
 
-##############################
+###################################################################################################
 # Import the list of patterns
-##############################
+###################################################################################################
 filepath = os.path.dirname(os.path.abspath(__file__))
 filename = 'data_model_extractor_patterns.json'
 with open(os.path.join(filepath,filename), 'r') as f:
@@ -178,7 +178,6 @@ def extract_dependencies(id_counter,block):
         tokens.append(token_normalized)
 
     # LOG OUTPUT
-
 	put_log("\n> Tokens \t\t: \n" + '\n'.join(tokens), "EXEC_LOG")
 
     
@@ -189,7 +188,6 @@ def extract_dependencies(id_counter,block):
         if clause:
             #dependencies_output = process_clause(block['type'], clause, dependencies_output)
             process_clause(block['type'], clause, dependencies_output)
-
 
     # Remove ; by the end of every clause, if any
     for key in dependencies_output:

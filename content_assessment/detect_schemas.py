@@ -1,7 +1,6 @@
 import os, re, platform
 import pandas as pd
 
-
 def extract_libname_schemas(file_path):
 
     # libname_pattern_1 = re.compile(r'LIBNAME\s+(\w+).*?SCHEMA\s*=\s*(\w+)', re.IGNORECASE)

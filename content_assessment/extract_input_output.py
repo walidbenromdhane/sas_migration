@@ -76,9 +76,7 @@ def extract_input_output_tables_from_one_file(file_path, libnames_etc):
 
     db_out_operations = ["create table", "insert into", "delete from"]
     db_in_operations = ["select", "from", "join"] # Assuming common read operations
-
 	data = []
-
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
@@ -87,7 +85,7 @@ def extract_input_output_tables_from_one_file(file_path, libnames_etc):
         library_occurrences = []
         for line_number, line in enumerate(lines):
             if ' '+library_name.lower()+'.' in line.lower():
-                library_occurrences.append(f'{line{line_number}: {line.strip()}')
+                library_occurrences.append(f'line{line_number}: {line.strip()}')
 
         #for lo in library_occurrences: print("    ",lo)
         input_tables, output_tables = extract_input_output_tables_from_library_occurrences(library_occurrences, library_name)
@@ -95,12 +93,12 @@ def extract_input_output_tables_from_one_file(file_path, libnames_etc):
         if library_occurrences != '':
             data.append((file_path, library_name, input_tables, output_tables, library_occurrences))
     df = pd.DataFrame(data=data, columns=['file_path', 'library_name', 'input_tables', 'output_tables', 'library_occurrences'])
-    # print("*** Intputs:",input_tables)
+    # print("*** Inputs:",input_tables)
     # print("*** Outputs:",output_tables)
 
     return df
 
-##############################################################################################################################
+########################################################################################################
 
 def get_all_file_paths(directory_path):
     file_paths = []
@@ -111,7 +109,7 @@ def get_all_file_paths(directory_path):
             file_paths.append(file_path)
     return file_paths
 
-##############################################################################################################################
+########################################################################################################
 
 def extract_input_output_tables_from_folder(directory_path, csv_output_path=None):
 

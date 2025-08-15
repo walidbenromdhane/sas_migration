@@ -507,6 +507,7 @@ class Public_functions:
 			b = Public_functions.is_valid_linux(s)
 			return a or b
 
+
     #############################################################################################
 
     @staticmethod

@@ -1,7 +1,6 @@
 import os, re, platform
 import pandas as pd
 
-
 def extract_tables(file_path, schemas, libnames):
 
     results = []
@@ -22,7 +21,6 @@ def extract_tables(file_path, schemas, libnames):
 
     return results
 
-
 def process_schemas(df, input_dir):
     all_results = []
     schemas = [s.upper() for s in df.schema.unique()]
@@ -39,7 +37,6 @@ def process_schemas(df, input_dir):
 
 return all_results
 
-
 def save_results_to_csv(results, output_file):
     df = pd.DataFrame(results, columns=['file_path', 'schema', 'libname', 'table', 'line_number', 'line_content']).drop_duplicates()
     df.to_csv(output_file, index=False, encoding='utf-8')
@@ -49,8 +46,8 @@ def save_results_to_csv(results, output_file):
 if __name__ == "__main__":
 
     if platform.system() == "Windows":
-        schemas_file = "./content_assessment/schemas_detected.csv"
-        output_file = "./content_assessment/schemas_and_tables.csv"
+        schemas_file = './content_assessment/schemas_detected.csv'
+        output_file = './content_assessment/schemas_and_tables.csv'
         input_directory = r"C:\Users\h163ejg\Desktop\test_schema"
 
     if platform.system() == "Linux":

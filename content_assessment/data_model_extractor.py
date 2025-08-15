@@ -20,6 +20,7 @@ filename = 'data_model_extractor_patterns.json'
 with open(os.path.join(filepath,filename), 'r') as f:
     block_definition_dict = json.load(f)
 
+
 ###################################################################################################
 # iterate over all directories and subdirectories in the directory path and populate 'input_file_paths'
 ###################################################################################################
@@ -50,7 +51,7 @@ def put_csv(output_file, header, content):
 
         # Output Data content
         for row in content:
-            writer.writerow(row.values())
+            writer.writerow(row)
 
 
 ###################################################################################################
@@ -101,7 +102,7 @@ def get_blocks(content):
     for block_definition in block_definition_dict:
         
         # For each Block structure, find all Blocks within the file that matches that Block structure
-        block_regex = r'(\s*'+block_definition['delimiters']['start']+'.*?'+block_definition['delimiters']['end']+')'
+        block_regex = r'(\s*'+block_definition['delimeters']['start']+'.*?'+block_definition['delimeters']['end']+')'
         block_pattern = re.compile(block_regex, re.DOTALL)
         blocks_content = block_pattern.findall(content)
 
@@ -134,7 +135,6 @@ def extract_dependencies(id_counter,block):
     # Add white space before the start of the block to act as a separator for the Tokenization step
     block['content'] = ' ' + block['content']
     block['content'] = block['content'].replace(";", " ")
-    block['content'] = normalize_text(block['content'])
 
     #put_log(block, "EXEC_STATUS")
 
@@ -163,7 +163,6 @@ def extract_dependencies(id_counter,block):
     pattern     = '|'.join(map(re.escape, [key + ' ' for key in block_definition['keys']])) # Create a regex pattern from the separators list
     parts       = re.split(pattern, block['content'], flags=re.IGNORECASE)
     
-    # print(parts)
     #put_log(parts, "EXEC_STATUS")
 
     # LOG OUTPUT
@@ -179,8 +178,8 @@ def extract_dependencies(id_counter,block):
         tokens.append(token_normalized)
 
     # LOG OUTPUT
-    # print(tokens)
-    put_log("\n> Tokens \t\t: \n" + '\n'.join(tokens), "EXEC_LOG")
+
+	put_log("\n> Tokens \t\t: \n" + '\n'.join(tokens), "EXEC_LOG")
 
     
     # Processing each token depending the associated Key to extract useful information
@@ -188,7 +187,8 @@ def extract_dependencies(id_counter,block):
         pattern = r"({})\s*(.*)".format("|".join(map(re.escape, block_definition['keys'])))
         clause = re.match(pattern, token, flags=re.IGNORECASE)
         if clause:
-            dependencies_output = process_clause(block['type'], clause, dependencies_output)
+            #dependencies_output = process_clause(block['type'], clause, dependencies_output)
+            process_clause(block['type'], clause, dependencies_output)
 
 
     # Remove ; by the end of every clause, if any
@@ -198,7 +198,7 @@ def extract_dependencies(id_counter,block):
     put_log("", "EXEC_LOG")
 
     # Return dependencies of the current Block
-    return dependencies_output
+    return(dependencies_output)
 
     
 

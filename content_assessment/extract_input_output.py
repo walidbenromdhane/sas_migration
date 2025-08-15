@@ -2,7 +2,7 @@ from detect_schemas import *
 import chardet, os
 import pandas as pd
 
-#######################################################################################################################
+##############################################################################################################################
 
 def fix_file_encoding(filepath):
     with open(filepath, 'rb') as f:
@@ -22,31 +22,31 @@ def fix_file_encoding(filepath):
     with open(filepath, mode='w', newline='', encoding='utf8') as f:
         f.writelines(lines)
 
-#######################################################################################################################
+##############################################################################################################################
 
 def extract_table_name(statement, library_name):
     if "create table" in statement.lower():
-        match = re.search(r"create table\s+(\w+\.)?(\w+)", statement, re.IGNORECASE)
+        match = re.search(r"create table\s+(?:\w+\.)?(\w+)", statement, re.IGNORECASE)
     else:
-        # match = re.search(rf"{library_name}\.([a-zA-Z0-9_]+)", statement, re.IGNORECASE)
-        match = re.search(rf"{library_name}\.([^.]+)", statement, re.IGNORECASE)
+        # match = re.search(fr"{library_name}\.([a-zA-Z0-9_]+)", statement, re.IGNORECASE)
+        match = re.search(fr"{library_name}\.([^ ]+)", statement, re.IGNORECASE)
     table = match.group(1) if match else None
     return table
 
-#######################################################################################################################
+##############################################################################################################################
 
 def get_list_of_libnames(input_directory):
 
     results = detect_schemas_and_libraries(input_directory)
-    schemas_and_libnames = pd.DataFrame(results, columns=['file_path', 'libname_statement', 'schema', 'libname', 'line'])
+    schemas_and_libraries = pd.DataFrame(results, columns=['file_path', 'libname_statement', 'schema', 'libname', 'line'])
     # Create a list with a list of all detected library names and schemas
-    schema = set(schemas_and_libnames[~schemas_and_libnames.schema.isnull()]['schema'])
-    libname = set(schemas_and_libnames[~schemas_and_libnames.libname.isnull()]['libname'])
+    schemas = set(schemas_and_libraries[~schemas_and_libraries.schema.isnull()]['schema'])
+    libname = set(schemas_and_libraries[~schemas_and_libraries.libname.isnull()]['libname'])
     libnames_etc = set([l.upper() for l in libname.union(schemas)])
 
     return libnames_etc
 
-#######################################################################################################################
+##############################################################################################################################
 
 def extract_input_output_tables_from_library_occurrences(library_occurrences, library_name):
 
@@ -70,35 +70,37 @@ def extract_input_output_tables_from_library_occurrences(library_occurrences, li
     output_tables = ', '.join(output_tables)
     return input_tables, output_tables
 
-#######################################################################################################################
+##############################################################################################################################
 
 def extract_input_output_tables_from_one_file(file_path, libnames_etc):
 
     db_out_operations = ["create table", "insert into", "delete from"]
     db_in_operations = ["select", "from", "join"] # Assuming common read operations
 
+	data = []
+
     with open(file_path, "r", encoding="utf-8") as file:
         lines = file.readlines()
 
-    data = []
-
     for library_name in libnames_etc:
-        print("*** The library is:",library_name)
+        # print("§ The library is:",library_name)
         library_occurrences = []
         for line_number, line in enumerate(lines):
-            if f'{library_name}.' in line.lower():
-                library_occurrences.append(f'{line_number}: {line.strip()}')
+            if ' '+library_name.lower()+'.' in line.lower():
+                library_occurrences.append(f'{line{line_number}: {line.strip()}')
 
-        for io in library_occurrences: print(io)
+        #for lo in library_occurrences: print("    ",lo)
         input_tables, output_tables = extract_input_output_tables_from_library_occurrences(library_occurrences, library_name)
-        if library_occurrences:
+		library_occurrences = '\n'.join(library_occurrences)
+        if library_occurrences != '':
             data.append((file_path, library_name, input_tables, output_tables, library_occurrences))
     df = pd.DataFrame(data=data, columns=['file_path', 'library_name', 'input_tables', 'output_tables', 'library_occurrences'])
-    print("*** Outputs:", output_tables)
+    # print("*** Intputs:",input_tables)
+    # print("*** Outputs:",output_tables)
 
     return df
 
-#######################################################################################################################
+##############################################################################################################################
 
 def get_all_file_paths(directory_path):
     file_paths = []
@@ -109,7 +111,7 @@ def get_all_file_paths(directory_path):
             file_paths.append(file_path)
     return file_paths
 
-#######################################################################################################################
+##############################################################################################################################
 
 def extract_input_output_tables_from_folder(directory_path, csv_output_path=None):
 
@@ -139,7 +141,7 @@ def extract_input_output_tables_from_folder(directory_path, csv_output_path=None
     df.to_csv(csv_output_path, encoding='utf-8', index=False)
     return df
 
-#######################################################################################################################
+##############################################################################################################################
 
 directory_path = r"C:\Users\h163ejg\Desktop\Work\extract_schemas_and_tables\test_schema_1"
 output_csv = r"C:\Users\h163ejg\Desktop\Work\extract_schemas_and_tables\test_schema_1\input_output.csv"

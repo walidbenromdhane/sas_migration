@@ -496,22 +496,27 @@ class Public_functions:
     #############################################################################################
 
     @staticmethod
-    def is_valid(s,operating_system):
-        if operating_system == 'Windows':
-            return Public_functions.is_valid_windows(s)
-        if operating_system == 'Linux':
-            return Public_functions.is_valid_linux(s)
+    def is_valid(s,operating_system=None):
+		if operating_system:
+			if operating_system == 'Windows':
+				return Public_functions.is_valid_windows(s)
+			if operating_system == 'Linux':
+				return Public_functions.is_valid_linux(s)
+		else:
+			a = Public_functions.is_valid_windows(s)
+			b = Public_functions.is_valid_linux(s)
+			return a or b
 
     #############################################################################################
 
     @staticmethod
     def find_hard_code(sas_code):
-        operating_system = Public_functions.get_operating_system()
+        #operating_system = Public_functions.get_operating_system()
         pattern = r'(["\'])(.*?)\1'
         hrd = []
         try:
             all_hrd = re.findall(pattern, sas_code)
-            hrd = [a for b in all_hrd for a in b if a != "'" and a != '"' and Public_functions.is_valid(a, operating_system) ]
+            hrd = [a for b in all_hrd for a in b if a != "'" and a != '"' and Public_functions.is_valid(a) ]
         except Exception as e:
             print('Warning in find_hard_code!')
             print('################################################################')

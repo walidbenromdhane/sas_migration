@@ -5,7 +5,7 @@ import pandas as pd
 def extract_libname_schemas(file_path):
 
     # libname_pattern_1 = re.compile(r'LIBNAME\s+(\w+).*?SCHEMA\s*=\s*(\w+)', re.IGNORECASE)
-    # libname_pattern_2 = re.compile(r'LIBNAME\s+(\w+)', re.IGNORECASE)
+    # libname_pattern_2 = re.compile(r"LIBNAME\s+(\w+)", re.IGNORECASE)
 
     results = []
 
@@ -24,7 +24,6 @@ def extract_libname_schemas(file_path):
 
     return results
 
-
 def detect_schemas_and_libraries(directory):
     all_results = []
     for root, _, files in os.walk(directory):
@@ -36,12 +35,10 @@ def detect_schemas_and_libraries(directory):
 
     return all_results
 
-
 def save_results_to_csv(results, output_file):
     df = pd.DataFrame(results, columns=['file_path', 'libname_statement', 'schema', 'libname', 'line'])
     df.to_csv(output_file, index=False, encoding='utf-8')
     print(f"Results saved to {output_file}")
-
 
 if __name__ == "__main__":
 

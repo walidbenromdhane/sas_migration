@@ -1,6 +1,7 @@
 from public_functions import Public_functions
 import os, traceback
 
+
 class ContentAssessment:
 
     def __init__(self, main_directory_sasfiles, main_directory_sastables, sas_table_row_limit, report_counter, output_directory):
@@ -13,11 +14,11 @@ class ContentAssessment:
         self.initialize_data_structures()
         self.process_all_files()
 
-    ############################################################
+    ######################################################################################################################
 
     def initialize_data_structures(self):
         self.files_df = []
-        self.files_details_df = []
+        self.files_detailes_df = []
         self.files_blocks_df = []
         self.files_hrd_code = []
         self.files_proc_lst = []
@@ -28,7 +29,7 @@ class ContentAssessment:
                              if os.path.isdir(os.path.join(self.main_directory_sasfiles, name))]
         self.main_folders_fullpath = [os.path.join(self.main_directory_sasfiles, x) for x in self.main_folders]
 
-    ############################################################
+    ######################################################################################################################
 
     def process_all_files(self):
         id_counter = 0
@@ -46,7 +47,7 @@ class ContentAssessment:
         self.save_data()
         print('SAS files were successfully identified!')
 
-    ############################################################
+    ######################################################################################################################
 	
     def process_sas_file(self, path, name, id_counter):
         input_file = os.path.join(path, name)
@@ -74,18 +75,17 @@ class ContentAssessment:
                               hrd_lst, proc_lst, table_relationships_lst, filename_lst,
                               libname_lst, let_lst, mac_lst, inc_lst, create_tbl_lst,
                               select_from_tbl_lst, x_command_lst, blocks_lst)
-
         self.update_incompatibilities_count(subdir, hrd_lst)
 
-    ############################################################
+    ######################################################################################################################
 
     def read_and_clean_sas_file(self, sasfile):
         contents_lst = sasfile.readlines()
-        contents_str = "\n".join(a.strip() for a in contents_lst)
+        contents_str = r"\n".join(a.strip() for a in contents_lst)
         contents_lst, contents_str = Public_functions.clean_sas_code(contents_lst, contents_str)
         return contents_lst, contents_str
 
-    ############################################################
+    ######################################################################################################################
 
     def update_file_counts(self, subdir):
         if subdir in self.number_of_files.keys():
@@ -93,7 +93,7 @@ class ContentAssessment:
         else:
             self.number_of_files[subdir] = 1
 
-    ############################################################
+    ######################################################################################################################
 	
     def update_incompatibilities_count(self, subdir, hrd_lst):
         if subdir in self.number_of_files_with_incompatibilities.keys():
@@ -101,10 +101,8 @@ class ContentAssessment:
                 self.number_of_files_with_incompatibilities[subdir] += 1
             else:
                 self.number_of_files_with_incompatibilities[subdir] = 0
-        else:
-            self.number_of_files_with_incompatibilities[subdir] = 1
 
-    ############################################################
+    ######################################################################################################################
 
     def append_hrd_code(self, id_counter, path, name, input_file, hrd_lst):
         self.files_hrd_code.extend([{
@@ -112,12 +110,12 @@ class ContentAssessment:
             'path'      : path,
             'name'      : name,
             'input_file': input_file,
-            'hrd_code'  : a,
+            'hrd_code'  : a
         } for a in hrd_lst])
 
-    ############################################################
+    ######################################################################################################################
 
-    def append_proc_lst(self, id_counter, path, name, input_file, proc_lst):
+    def append_proc_list(self, id_counter, path, name, input_file, proc_lst):
         self.files_proc_lst.extend([{
             'id'        : str(id_counter),
             'path'      : path,
@@ -126,7 +124,7 @@ class ContentAssessment:
             'proc'      : a,
         } for a in proc_lst])
 
-    ############################################################
+    ######################################################################################################################
 
     def append_files_df(self, id_counter, path, name, input_file, lines_count, contents_str):
         self.files_df.append({
@@ -139,7 +137,7 @@ class ContentAssessment:
             'program_code'    : contents_str
         })
 
-    ############################################################
+    ######################################################################################################################
 
 	def append_files_relationships(self, table_relationships_lst):
         self.files_relationships.extend([{
@@ -154,12 +152,12 @@ class ContentAssessment:
             "filters"          : line['filters']
         } for line in table_relationships_lst])
 
-    ############################################################
+    ######################################################################################################################
 
     def append_files_details_df(self, id_counter, path, name, input_file, filename_lst,
                                 libname_lst, let_lst, mac_lst, inc_lst, create_tbl_lst,
                                 select_from_tbl_lst, x_command_lst):
-        self.files_details_df.extend([{
+        self.files_detailes_df.extend([{
             'id'       : str(id_counter),
             'path'     : path,
             'name'     : name,
@@ -173,7 +171,7 @@ class ContentAssessment:
         } for a in b if a != [] for b in [filename_lst, libname_lst, let_lst, mac_lst, inc_lst,
                                           create_tbl_lst, select_from_tbl_lst, x_command_lst]])
 
-    ############################################################
+    ######################################################################################################################
 
     def append_files_blocks_df(self, id_counter, path, name, input_file, blocks_lst):
         self.files_blocks_df.extend([{
@@ -185,7 +183,7 @@ class ContentAssessment:
             'block_idx' : a['block_idx'] if 'block_idx' in a else 0
         } for a in blocks_lst if a != []])
 
-    ############################################################
+    ######################################################################################################################
 
 	    def append_file_data(self, id_counter, input_file, path, name, lines_count,
                          contents_str, hrd_lst, proc_lst, table_relationships_lst,
@@ -201,24 +199,24 @@ class ContentAssessment:
                                      select_from_tbl_lst, x_command_lst)
         self.append_files_relationships(table_relationships_lst)
 
-    ############################################################
+    ######################################################################################################################
 
     def save_intermediate_data(self, id_counter):
         print(f'{id_counter} SAS programs were identified')
         self.save_data()
 
-    ############################################################
+    ######################################################################################################################
 
     def save_data_to_csv(self, data, filename, columns):
         Public_functions.save_dict_to_csv(data, f'{self.output_directory}/{filename}', columns)
 
-    ############################################################
+    ######################################################################################################################
 
     def save_data(self):
         self.save_data_to_csv(self.files_df,
                               'sas_programs_main.csv',
                               ['id', 'path', 'name', 'input_file', 'main', 'number_of_lines'])
-        self.save_data_to_csv(self.files_details_df,
+        self.save_data_to_csv(self.files_detailes_df,
                               'sas_programs_details.csv',
                               ['id', 'path', 'name', 'input_file', 'type', 'original', 'key',
                                'value_0', 'value_1', 'index'])
@@ -236,7 +234,7 @@ class ContentAssessment:
                               'sas_programs_proc_list.csv',
                               ['id', 'path', 'name', 'input_file', 'proc'])
 
-    ############################################################
+    ######################################################################################################################
 
 	    def handle_file_reading_exception(self, e):
         print('Warning in reading SAS file!')
@@ -245,9 +243,9 @@ class ContentAssessment:
         print('############################################################')
         print(r'\n')
 
-    ############################################################
+    ######################################################################################################################
 
-class ContentAssessmentExecution():
+class ContentAssessementExecution():
 
     def __init__(self, main_directory_sasfiles_list, main_output_directory):
 
@@ -256,7 +254,7 @@ class ContentAssessmentExecution():
         self.main_directory_sasfiles_list = main_directory_sasfiles_list
         self.main_output_directory = main_output_directory
 
-    ############################################################
+    ######################################################################################################################
 
     def run(self):
 
@@ -281,7 +279,7 @@ class ContentAssessmentExecution():
                 logfile_path = "{0}/exceptions_loadfiles_{1}.log".format(output_directory,file_suffix)
                 with open(logfile_path, "a") as logfile:
                     traceback.print_exc(file=logfile)
-                print('Error in finding .sas files!!')
+                print('Error in finding .sas files!')
                 print('############################################################')
                 print(e)
                 print('############################################################')

@@ -44,7 +44,6 @@ class ConvertSasCodeUtf:
             df = pd.concat([df, df_temp])
         return df
 
-
     @staticmethod
     def convert_sas_file(source_file, encoding, target_file):
         """This function converts a SAS code file from Latin-1 encoding to UTF-8 encoding.
@@ -57,7 +56,6 @@ class ConvertSasCodeUtf:
         # Write the content to a new file in UTF-8 encoding
         with open(target_file, 'w', encoding='utf-8') as target:
             target.write(sas_code)
-
 
     def get_sas_filenames(self):
         """Gets all filenames with the .sas extension from a specified directory.
@@ -102,9 +100,4 @@ class ConvertSasCodeUtf:
         with open(file, 'rb') as f:
             rawdata = f.read()
         return chardet.detect(rawdata)['encoding']
-
-
-
-
-
 

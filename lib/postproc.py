@@ -1,7 +1,7 @@
 import os, re
 import pandas as pd
 
-###################################################################################################################
+#####################################################################################################################
 
 def append_one_file(main_folder, file_prefix, folder_prefix):
     merged_df = pd.DataFrame()
@@ -25,7 +25,6 @@ def append_one_file(main_folder, file_prefix, folder_prefix):
                         except Exception as e:
                             # print(f"File {file_path} could not be read !")
                             print(str(e)+f" {file_path}")
-
     return merged_df
 
 #####################################################################################################################

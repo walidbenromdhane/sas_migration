@@ -102,7 +102,7 @@ def get_blocks(content):
     for block_definition in block_definition_dict:
         
         # For each Block structure, find all Blocks within the file that matches that Block structure
-        block_regex = r'(\s*'+block_definition['delimeters']['start']+'.*?'+block_definition['delimeters']['end']+')'
+        block_regex = r'(\s*'+block_definition['delimiters']['start']+'.*?'+block_definition['delimiters']['end']+')'
         block_pattern = re.compile(block_regex, re.DOTALL)
         blocks_content = block_pattern.findall(content)
 
@@ -354,41 +354,44 @@ def process_clause(block_type, clause, dependencies_output):
             clause_content = re.split(r'[;]', clause_content)[0]
             filters_array = [element.strip() for element in clause_content.split(' AND ')]
             dependencies_output['filters'] = ', '.join(filters_array)
+			
     return dependencies_output
     
 ################################################################################################
 
-folder_path = r'C:\Users\NW538RY\OneDrive - EY\Desktop\Work\test\model_extractor'
+if __name__ == '__main__':
 
-# Define the output CSV file path
-output_csv_path = r"C:\Users\NW538RY\OneDrive - EY\Desktop\Work\test\model_extractor\dependencies_output.csv"
-    
-# Define the file extension to look for
-file_extension = ".sas"  # Change this as per your needs (e.g., .sql, .sas)
+	folder_path = r'C:\Users\NW538RY\OneDrive - EY\Desktop\Work\test\model_extractor'
 
-# Get all file paths with the specified extension in the given folder
-file_paths = get_files(folder_path, file_extension)
+	# Define the output CSV file path
+	output_csv_path = r"C:\Users\NW538RY\OneDrive - EY\Desktop\Work\test\model_extractor\dependencies_output.csv"
+		
+	# Define the file extension to look for
+	file_extension = ".sas"  # Change this as per your needs (e.g., .sql, .sas)
 
-# Placeholder for CSV header and content
-header = [["id", "statement", "table", "columns", "tables_source", "join_type",
-           "join_table", "join_conditions", "filters","file_path"]]
-csv_content = []
-# Loop through each file and extract dependencies
-for file_path in file_paths:
-    with open(file_path, 'r') as f:
-            content = f.read()
-    # The extract_dependencies function must be adapted based on your actual data model
-    # print(file_path)
-    # content = normalize_text(content)
-    blocks = get_blocks(content)
-    for id_counter,block in enumerate(blocks):
-        dependencies_output = extract_dependencies(id_counter,block)
-        dependencies_output['file_path'] = file_path
-        csv_content.append(dependencies_output)
+	# Get all file paths with the specified extension in the given folder
+	file_paths = get_files(folder_path, file_extension)
+
+	# Placeholder for CSV header and content
+	header = [["id", "statement", "table", "columns", "tables_source", "join_type",
+			   "join_table", "join_conditions", "filters","file_path"]]
+	csv_content = []
+	# Loop through each file and extract dependencies
+	for file_path in file_paths:
+		with open(file_path, 'r') as f:
+				content = f.read()
+		# The extract_dependencies function must be adapted based on your actual data model
+		# print(file_path)
+		# content = normalize_text(content)
+		blocks = get_blocks(content)
+		for id_counter,block in enumerate(blocks):
+			dependencies_output = extract_dependencies(id_counter,block)
+			dependencies_output['file_path'] = file_path
+			csv_content.append(dependencies_output)
 
 
-# print(csv_content)
-# Write the extracted data to a CSV file
-put_csv(output_csv_path, header, csv_content)
+	# print(csv_content)
+	# Write the extracted data to a CSV file
+	put_csv(output_csv_path, header, csv_content)
 
-print(f"Dependencies extracted and written to {output_csv_path}")
+	print(f"Dependencies extracted and written to {output_csv_path}")
